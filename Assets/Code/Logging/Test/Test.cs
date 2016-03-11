@@ -35,6 +35,13 @@ public class Test : MonoBehaviour {
 		{
 			LoggingManager.Log(LogChannel.UI, " Button PRess");
 		}
+
+		if (Input.GetKeyDown(KeyCode.U))
+		{
+			LoggingManager.Log(LogChannel.AssetDatabase, "PRessed U ");
+		}
+
+
 	}
 
 

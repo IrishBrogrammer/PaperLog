@@ -1,5 +1,5 @@
 {
-	"OutputInterface" : "UnityLog",
+	"OutputInterface" : "PaperLog",
 	"ActiveLogChannels" : ["AssetDatabase","UI"],
 	"ActiveLogGroups" : []
 }

@@ -10,6 +10,7 @@ public static class LogStore
 
 	public static void SetStore(EditorLogStore editorStore)
 	{
+		Debug.Log(" Setting store with log count of " + editorStore.Logs.Count);
 		store = editorStore;
 	}
 
@@ -52,14 +53,15 @@ public class EditorLogStore : ScriptableObject
 		var editorDebug = ScriptableObject.FindObjectOfType<EditorLogStore>();
 
 		if (editorDebug == null)
+		{
+			Debug.Log(" couldnt find log store in scene ");
 			editorDebug = ScriptableObject.CreateInstance<EditorLogStore>();
-	
+		}
 		return editorDebug;	
 	}
 
 	public void OnEnable()
 	{
-	
 		hideFlags = HideFlags.HideAndDontSave;
 	}
 
@@ -70,6 +72,7 @@ public class EditorLogStore : ScriptableObject
 
 	public void ClearLogs()
 	{
+
 		Logs.Clear();
 	}
 

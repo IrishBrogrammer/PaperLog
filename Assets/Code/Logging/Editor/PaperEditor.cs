@@ -1,18 +1,32 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
 public class PaperEditor : EditorWindow
 {
-	private static List<string> message = new List<string>();
+	private enum EditorTab
+	{ 
+		Console,
+		Filter
+	}
+
+	private Dictionary<EditorTab, IPaperGUI> tabGGUI = new Dictionary<EditorTab, IPaperGUI>()
+	{
+		{ EditorTab.Filter , new FilterGUI() },
+		{ EditorTab.Console , new LogGUI() } 
+	};
+	EditorTab currentTab = EditorTab.Console;
+
 	private static PaperActionBar actionBar = new PaperActionBar();
 
 	private static bool clearOnPlay = false;
 
 	[UnityEngine.SerializeField]
-	EditorLogStore editorstore;
+	private static EditorLogStore editorstore;
 
 	private Vector2 ScrollPos;
+
+	IPaperGUI currentGUI = new FilterGUI();
 
 	[MenuItem("Paper/Show Console")]
 	public static void ShowWindow()
@@ -24,16 +38,24 @@ public class PaperEditor : EditorWindow
 	{
 		var window = ScriptableObject.CreateInstance<PaperEditor>();
 		window.Show();
-		window.position = new Rect( 200, 200 , 400 , 300 );
+		window.position = new Rect(200, 200, 400, 300);
 	}
 
+
+
 	void OnEnable()
-	{	
+	{
 		if (editorstore == null)
+		{
 			editorstore = EditorLogStore.Create();
+		}
 
 		if (LogStore.GetLogStore() == null)
+		{
+			Debug.Log(" Editor store has gone null; ");
+			Debug.Log(" Setting store with " + editorstore.Logs.Count);
 			LogStore.SetStore(editorstore);
+		}
 	}
 
 	void OnInspectorUpdate()
@@ -44,40 +66,45 @@ public class PaperEditor : EditorWindow
 	void OnGUI()
 	{
 		actionBar.DrawActionBar();
-		ScrollPos = GUILayout.BeginScrollView( ScrollPos );
-	
-		List<LogInfo> listOfLogs = editorstore.Logs;
-		
-		for( int i = 0; i < listOfLogs.Count; i++ )
-		{
-			GUILayout.BeginVertical();
-			OutputMessage( i ,  listOfLogs[i] );
-			GUILayout.EndVertical();
-		}
-
-		GUILayout.EndScrollView();
+		DrawTabs();
+		DrawMain();
 	}
 
-	private List<Color> labelColours = new List<Color>()
-	{
-		Color.red,
-		Color.black
-	};
+	void DrawTabs()
+	{	
+		GUILayout.BeginHorizontal();
+		foreach( EditorTab tab in System.Enum.GetValues( typeof( EditorTab ) ) )
+		{
+			DrawTab( tab );	
+		}	
+		GUILayout.EndHorizontal();
+	}
 
-	private void OutputMessage( int index , LogInfo log  )
+	void DrawTab(EditorTab tab)
+	{
+		if ( GUILayout.Button( tab.ToString() )  )
+			currentTab = tab;
+	}
+
+	void DrawMain()
+	{
+		IPaperGUI currentGUI = tabGGUI[currentTab];
+
+		foreach (var log in editorstore.Logs)
+			OutputMessage(log);
+
+	//	currentGUI.DrawGUI( editorstore );
+	}
+
+	private void OutputMessage( LogInfo log)
 	{
 		GUILayout.BeginHorizontal();
 
-		int colorIndex = index % 2;
-
-		GUI.contentColor = labelColours[colorIndex];
-		GUILayout.Label( log.LogChannel.ToString() );
+		GUILayout.Label(log.LogChannel.ToString());
 
 		GUILayout.Box(log.Message);
-	
+
 		GUILayout.EndHorizontal();
-		
-		
 	}
 
 
